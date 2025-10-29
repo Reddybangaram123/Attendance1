@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Admin User</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h2>Create Admin User</h2>
+    <div id="result"></div>
+    
+    <script>
+        const supabaseUrl = 'https://tsmvyhkerfqvrmkxkuqs.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzbXZ5aGtlcmZxdnJta3hrdXFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2NjE3ODksImV4cCI6MjA3NzIzNzc4OX0.e1Sml5E03tKfXHTpTSLuPMPUwiQF2Y6EpxEDpJCzKXY';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        
+        async function createAdmin() {
+            const { data, error } = await supabase.auth.signUp({
+                email: 'kummithagopalreddy854@gmail.com',
+                password: 'Reddy@123',
+            });
+            
+            if (error) {
+                document.getElementById('result').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+            } else {
+                document.getElementById('result').innerHTML = '<p style="color: green;">Admin user created successfully! You can now login.</p>';
+            }
+        }
+        
+        createAdmin();
+    </script>
+</body>
+</html>
