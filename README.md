@@ -6,11 +6,22 @@ A comprehensive attendance tracking web application built with React, TypeScript
 
 ### Admin Portal
 - Secure login authentication
-- Manual attendance entry with date selection
-- Excel/CSV file upload for bulk attendance import
-- Add new students to the system
-- View all registered students
-- Subject-wise attendance tracking
+- **Three main sections**: Attendance, Manage Students, Analytics
+- **Attendance Management**:
+  - Manual attendance entry with date selection
+  - Excel/CSV file upload for bulk attendance import
+  - Subject-wise entry with Present/Absent status
+- **Student Management**:
+  - Year-wise organization (Year 1, 2, 3, 4)
+  - Add individual students with year selection
+  - Bulk upload students via CSV/Excel with year information
+  - View and delete students by year
+- **Analytics Dashboard**:
+  - Subject-wise attendance percentage for each student
+  - Overall attendance percentage (average of all subjects)
+  - Year-wise analytics view
+  - Color-coded attendance status (green ≥75%, yellow 50-74%, red <50%)
+  - Export analytics to CSV
 
 ### Student Portal
 - Public access - no login required
@@ -36,6 +47,7 @@ A comprehensive attendance tracking web application built with React, TypeScript
 - `id`: UUID (Primary Key)
 - `roll_no`: Text (Unique)
 - `name`: Text
+- `year`: Integer (1-4) - Academic year
 - `created_at`: Timestamp
 
 ### Attendance Records Table
@@ -78,17 +90,19 @@ Once the account is created:
 
 ## Usage Guide
 
-### Admin Functions
+### Admin Portal Navigation
 
-#### Manual Attendance Entry
-1. Select date
-2. Choose student from dropdown
-3. Enter subjects with Present/Absent status
-4. Click "Save Attendance"
+The admin portal has three main sections:
 
-#### Excel/CSV Upload
-1. Prepare file with columns: RollNo, Date, Subject, Status
-2. Click "Upload Excel/CSV" tab
+#### 1. Attendance Tab
+**Manual Entry:**
+1. Select date and student from dropdowns
+2. Enter subjects with Present/Absent status
+3. Click "Save Attendance"
+
+**Bulk Upload:**
+1. Prepare CSV/Excel file with columns: RollNo, Date, Subject, Status
+2. Click "Upload Excel/CSV" sub-tab
 3. Select your file
 4. Click "Upload"
 
@@ -100,10 +114,40 @@ RollNo          Date        Subject             Status
 21A91A01A2      2025-10-28  Chemistry          Present
 ```
 
-#### Add New Student
-1. Click "Add New Student" button
-2. Enter roll number and name
-3. Click "Save Student"
+#### 2. Manage Students Tab
+**Add Individual Students:**
+1. Fill in Roll Number, Name, and Year
+2. Click "Add Student"
+
+**Bulk Upload Students:**
+1. Prepare CSV/Excel file with columns: RollNo, Name, Year
+2. Click file upload area or drag & drop
+3. Preview the data in the table
+4. Click "Upload X Students"
+
+**Student Bulk Upload Format:**
+```
+RollNo           Name              Year
+21A91A01A1       John Doe          1
+21A91A01A2       Jane Smith        2
+21A91A02A1       Bob Johnson       3
+```
+
+**View Students by Year:**
+1. Click year tabs (Year 1, Year 2, Year 3, Year 4)
+2. View all students in that year
+3. Delete students using the delete icon
+
+#### 3. Analytics Tab
+**View Attendance Analytics:**
+1. Select a year to view its analytics
+2. View subject-wise attendance percentages for each student
+3. See overall attendance percentage (average of all subjects)
+4. Color-coded status indicators:
+   - Green (≥75%): Good attendance
+   - Yellow (50-74%): Fair attendance
+   - Red (<50%): Low attendance
+5. Export analytics to CSV using the Export button
 
 ### Student Functions
 
@@ -136,17 +180,20 @@ The database includes sample students and attendance records:
 ```
 src/
 ├── components/
-│   ├── AdminLogin.tsx          # Admin authentication
-│   ├── AdminDashboard.tsx      # Admin main interface
-│   ├── ManualAttendance.tsx    # Manual entry form
-│   ├── AttendanceUpload.tsx    # Excel/CSV upload
-│   └── StudentAttendance.tsx   # Student viewer
+│   ├── AdminLogin.tsx              # Admin authentication
+│   ├── AdminDashboard.tsx          # Admin main interface with 3 tabs
+│   ├── ManualAttendance.tsx        # Manual attendance entry form
+│   ├── AttendanceUpload.tsx        # Excel/CSV attendance upload
+│   ├── ManageStudents.tsx          # Year-wise student management
+│   ├── StudentBulkUpload.tsx       # Bulk student upload via CSV/Excel
+│   ├── AttendanceAnalytics.tsx     # Attendance analytics & percentages
+│   └── StudentAttendance.tsx       # Student portal viewer
 ├── lib/
-│   └── supabase.ts            # Supabase client config
+│   └── supabase.ts                # Supabase client config
 ├── utils/
-│   └── calculateAttendance.ts # Attendance calculations
-├── App.tsx                    # Main app with routing
-└── main.tsx                   # Entry point
+│   └── calculateAttendance.ts     # Attendance calculations
+├── App.tsx                        # Main app with routing
+└── main.tsx                       # Entry point
 ```
 
 ## Development
@@ -165,13 +212,30 @@ npm run build
 npm run preview
 ```
 
-## Notes
+## Key Features & Notes
 
-- Database is already set up with tables and sample data
-- Admin account needs to be created using provided instructions
-- Students don't need accounts to view their attendance
-- Excel uploads are validated for correct format
-- Overall attendance is highlighted green (≥75%) or red (<75%)
+### Year-Wise Organization
+- Students are organized by academic year (Year 1-4)
+- Each student must have a year assigned during creation
+- Analytics can be filtered by year for better insights
+
+### Attendance Analytics
+- **Subject-wise percentages**: Shows attendance % for each subject separately
+- **Overall percentage**: Calculated as the average of all subjects' attendance percentages
+- Color-coded indicators help identify attendance trends quickly
+- CSV export functionality for reports and record-keeping
+
+### Bulk Operations
+- Upload multiple students at once with year information
+- Upload multiple attendance records in a single batch
+- CSV/Excel format validation with preview before upload
+- File format ensures data integrity
+
+### Data Organization
+- Database has built-in year column for scalability
+- Sample data provided for testing (Year 1 students)
+- Existing students are assigned to Year 1 by default
+- All new uploads require year specification
 
 ## Support
 

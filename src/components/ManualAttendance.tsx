@@ -1,9 +1,12 @@
-import { useState } from 'react';
-import { supabase, Student } from '../lib/supabase';
-import { Save, Plus, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { Save, Plus, X, Loader } from 'lucide-react';
 
-interface ManualAttendanceProps {
-  students: Student[];
+interface Student {
+  id: string;
+  roll_no: string;
+  name: string;
+  year: number;
 }
 
 interface SubjectEntry {
@@ -11,7 +14,8 @@ interface SubjectEntry {
   status: 'Present' | 'Absent';
 }
 
-export default function ManualAttendance({ students }: ManualAttendanceProps) {
+export default function ManualAttendance() {
+  const [students, setStudents] = useState<Student[]>([]);
   const [selectedRollNo, setSelectedRollNo] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [subjects, setSubjects] = useState<SubjectEntry[]>([
@@ -24,9 +28,30 @@ export default function ManualAttendance({ students }: ManualAttendanceProps) {
     { subject: 'AI', status: 'Present' },
   ]);
   const [loading, setLoading] = useState(false);
+  const [fetchingStudents, setFetchingStudents] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [newStudent, setNewStudent] = useState({ rollNo: '', name: '' });
-  const [showAddStudent, setShowAddStudent] = useState(false);
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
+
+  const fetchStudents = async () => {
+    try {
+      setFetchingStudents(true);
+      const { data, error } = await supabase
+        .from('students')
+        .select('*')
+        .order('year', { ascending: true })
+        .order('roll_no', { ascending: true });
+
+      if (error) throw error;
+      setStudents(data || []);
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || 'Failed to fetch students' });
+    } finally {
+      setFetchingStudents(false);
+    }
+  }
 
   const handleAddSubject = () => {
     setSubjects([...subjects, { subject: '', status: 'Present' }]);
@@ -42,27 +67,6 @@ export default function ManualAttendance({ students }: ManualAttendanceProps) {
     setSubjects(updated);
   };
 
-  const handleAddStudent = async () => {
-    if (!newStudent.rollNo || !newStudent.name) {
-      setMessage({ type: 'error', text: 'Please fill in all student details' });
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('students')
-        .insert([{ roll_no: newStudent.rollNo, name: newStudent.name }]);
-
-      if (error) throw error;
-
-      setMessage({ type: 'success', text: 'Student added successfully!' });
-      setNewStudent({ rollNo: '', name: '' });
-      setShowAddStudent(false);
-      window.location.reload();
-    } catch (error: any) {
-      setMessage({ type: 'error', text: error.message || 'Failed to add student' });
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,52 +133,7 @@ export default function ManualAttendance({ students }: ManualAttendanceProps) {
         </div>
       )}
 
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-800">Add Daily Attendance</h3>
-        <button
-          onClick={() => setShowAddStudent(!showAddStudent)}
-          className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Student</span>
-        </button>
-      </div>
-
-      {showAddStudent && (
-        <div className="bg-blue-50 p-4 rounded-lg space-y-3">
-          <h4 className="font-medium text-gray-800">New Student</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="text"
-              placeholder="Roll Number"
-              value={newStudent.rollNo}
-              onChange={(e) => setNewStudent({ ...newStudent, rollNo: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Student Name"
-              value={newStudent.name}
-              onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
-          <div className="flex space-x-2">
-            <button
-              onClick={handleAddStudent}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition"
-            >
-              Save Student
-            </button>
-            <button
-              onClick={() => setShowAddStudent(false)}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg transition"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
+      <h3 className="text-lg font-semibold text-gray-800">Add Daily Attendance</h3>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -191,19 +150,26 @@ export default function ManualAttendance({ students }: ManualAttendanceProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Student Roll Number</label>
-            <select
-              value={selectedRollNo}
-              onChange={(e) => setSelectedRollNo(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              required
-            >
-              <option value="">Select a student</option>
-              {students.map((student) => (
-                <option key={student.id} value={student.roll_no}>
-                  {student.roll_no} - {student.name}
-                </option>
-              ))}
-            </select>
+            {fetchingStudents ? (
+              <div className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                <Loader className="w-5 h-5 text-blue-600 animate-spin mr-2" />
+                <span className="text-gray-600">Loading students...</span>
+              </div>
+            ) : (
+              <select
+                value={selectedRollNo}
+                onChange={(e) => setSelectedRollNo(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                required
+              >
+                <option value="">Select a student</option>
+                {students.map((student) => (
+                  <option key={student.id} value={student.roll_no}>
+                    {student.roll_no} - {student.name} (Year {student.year})
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 

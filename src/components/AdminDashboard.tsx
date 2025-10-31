@@ -1,37 +1,19 @@
-import { useState, useEffect } from 'react';
-import { supabase, Student } from '../lib/supabase';
-import { LogOut, Upload, Plus, Calendar, User } from 'lucide-react';
+import { useState } from 'react';
+import { supabase } from '../lib/supabase';
+import { LogOut, Upload, Plus, Calendar, BarChart3, Users } from 'lucide-react';
 import AttendanceUpload from './AttendanceUpload';
 import ManualAttendance from './ManualAttendance';
+import ManageStudents from './ManageStudents';
+import StudentBulkUpload from './StudentBulkUpload';
+import AttendanceAnalytics from './AttendanceAnalytics';
 
 interface AdminDashboardProps {
   onLogout: () => void;
 }
 
 export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'manual' | 'upload'>('manual');
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchStudents();
-  }, []);
-
-  const fetchStudents = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('students')
-        .select('*')
-        .order('roll_no');
-
-      if (error) throw error;
-      setStudents(data || []);
-    } catch (error) {
-      console.error('Error fetching students:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [activeTab, setActiveTab] = useState<'attendance' | 'students' | 'analytics'>('attendance');
+  const [attendanceSubTab, setAttendanceSubTab] = useState<'manual' | 'upload'>('manual');
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -61,80 +43,89 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Attendance Management</h2>
-
-          <div className="flex space-x-4 mb-6 border-b">
-            <button
-              onClick={() => setActiveTab('manual')}
-              className={`flex items-center space-x-2 px-4 py-3 font-medium transition border-b-2 ${
-                activeTab === 'manual'
-                  ? 'text-blue-600 border-blue-600'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
-              }`}
-            >
-              <Plus className="w-5 h-5" />
-              <span>Manual Entry</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('upload')}
-              className={`flex items-center space-x-2 px-4 py-3 font-medium transition border-b-2 ${
-                activeTab === 'upload'
-                  ? 'text-blue-600 border-blue-600'
-                  : 'text-gray-500 border-transparent hover:text-gray-700'
-              }`}
-            >
-              <Upload className="w-5 h-5" />
-              <span>Upload Excel/CSV</span>
-            </button>
-          </div>
-
-          {activeTab === 'manual' ? (
-            <ManualAttendance students={students} />
-          ) : (
-            <AttendanceUpload />
-          )}
+        <div className="flex flex-wrap gap-2 mb-6">
+          <button
+            onClick={() => setActiveTab('attendance')}
+            className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition ${
+              activeTab === 'attendance'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-100 shadow'
+            }`}
+          >
+            <Calendar className="w-5 h-5" />
+            <span>Attendance</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('students')}
+            className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition ${
+              activeTab === 'students'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-100 shadow'
+            }`}
+          >
+            <Users className="w-5 h-5" />
+            <span>Manage Students</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition ${
+              activeTab === 'analytics'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-100 shadow'
+            }`}
+          >
+            <BarChart3 className="w-5 h-5" />
+            <span>Analytics</span>
+          </button>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <User className="w-6 h-6 text-blue-600" />
-            <h3 className="text-xl font-bold text-gray-800">Registered Students</h3>
-          </div>
+        {activeTab === 'attendance' && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Attendance Management</h2>
 
-          {loading ? (
-            <div className="text-center py-8 text-gray-500">Loading students...</div>
-          ) : students.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Roll Number
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {students.map((student) => (
-                    <tr key={student.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {student.roll_no}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {student.name}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="flex space-x-4 mb-6 border-b">
+              <button
+                onClick={() => setAttendanceSubTab('manual')}
+                className={`flex items-center space-x-2 px-4 py-3 font-medium transition border-b-2 ${
+                  attendanceSubTab === 'manual'
+                    ? 'text-blue-600 border-blue-600'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <Plus className="w-5 h-5" />
+                <span>Manual Entry</span>
+              </button>
+              <button
+                onClick={() => setAttendanceSubTab('upload')}
+                className={`flex items-center space-x-2 px-4 py-3 font-medium transition border-b-2 ${
+                  attendanceSubTab === 'upload'
+                    ? 'text-blue-600 border-blue-600'
+                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                }`}
+              >
+                <Upload className="w-5 h-5" />
+                <span>Upload Excel/CSV</span>
+              </button>
             </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">No students registered yet</div>
-          )}
-        </div>
+
+            {attendanceSubTab === 'manual' ? (
+              <ManualAttendance />
+            ) : (
+              <AttendanceUpload />
+            )}
+          </div>
+        )}
+
+        {activeTab === 'students' && (
+          <div className="space-y-6">
+            <StudentBulkUpload />
+            <ManageStudents />
+          </div>
+        )}
+
+        {activeTab === 'analytics' && (
+          <AttendanceAnalytics />
+        )}
       </div>
     </div>
   );
