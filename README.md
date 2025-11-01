@@ -8,9 +8,13 @@ A comprehensive attendance tracking web application built with React, TypeScript
 - Secure login authentication
 - **Three main sections**: Attendance, Manage Students, Analytics
 - **Attendance Management**:
-  - Manual attendance entry with date selection
-  - Excel/CSV file upload for bulk attendance import
-  - Subject-wise entry with Present/Absent status
+  - Year and subject selection (Year 1-4 with subject-specific courses)
+  - Daily attendance marking with real-time student search
+  - Search students by roll number or name with live filtering
+  - Bulk mark attendance (Mark All Present/Absent buttons)
+  - Batch upload attendance via Excel/CSV files
+  - Subject-wise attendance recording per year
+  - Stored year-wise and subject-wise in database
 - **Student Management**:
   - Year-wise organization (Year 1, 2, 3, 4)
   - Add individual students with year selection
@@ -56,6 +60,7 @@ A comprehensive attendance tracking web application built with React, TypeScript
 - `date`: Date
 - `subject`: Text
 - `status`: Text (Present/Absent)
+- `year`: Integer (1-4) - Academic year of the record
 - `created_at`: Timestamp
 - `created_by`: UUID (Admin ID)
 
@@ -95,24 +100,68 @@ Once the account is created:
 The admin portal has three main sections:
 
 #### 1. Attendance Tab
-**Manual Entry:**
-1. Select date and student from dropdowns
-2. Enter subjects with Present/Absent status
-3. Click "Save Attendance"
 
-**Bulk Upload:**
-1. Prepare CSV/Excel file with columns: RollNo, Date, Subject, Status
-2. Click "Upload Excel/CSV" sub-tab
+**Daily Attendance (New Interface):**
+1. Click "Daily Attendance" button
+2. Select a Year (1, 2, 3, or 4)
+3. Select Subject from the year-specific subject list:
+   - **Year 1**: Communicative English, Engineering Chemistry, Linear Algebra, etc.
+   - **Year 2**: Discrete Mathematics, Digital Logic, Advanced Data Structures, etc.
+   - **Year 3**: Data Mining, Computer Networks, Formal Languages, etc.
+   - **Year 4**: Software Engineering, Web Technologies, Cloud Computing, etc.
+4. Set the date (defaults to today)
+5. Search students by roll number or name (real-time filtering)
+6. Mark attendance by clicking Present/Absent buttons for each student
+7. Use "All Present" or "All Absent" buttons for bulk marking
+8. Click "Save Attendance" to record
+
+**Bulk Upload Attendance:**
+1. Click "Upload Attendance" button
+2. Prepare CSV/Excel file with columns: RollNo, Date, Subject, Status, Year
 3. Select your file
 4. Click "Upload"
 
 **Excel Format Example:**
 ```
-RollNo          Date        Subject             Status
-21A91A01A1      2025-10-28  Maths              Present
-21A91A01A1      2025-10-28  Physics            Absent
-21A91A01A2      2025-10-28  Chemistry          Present
+RollNo          Date        Subject                    Status   Year
+21A91A01A1      2025-10-28  Linear Algebra & Calculus Present  1
+21A91A01A1      2025-10-28  Engineering Chemistry     Absent   1
+21A91A02A1      2025-10-28  Digital Logic             Present  2
 ```
+
+**Subject List by Year:**
+
+**Year 1 Subjects:**
+- Communicative English
+- Engineering Chemistry
+- Linear Algebra & Calculus
+- Basic Civil & Mechanical Engineering
+- Introduction to Programming
+- Communicative English Lab
+- Engineering Chemistry Lab
+- Engineering Workshop
+- Computer Programming Lab
+
+**Year 2 Subjects:**
+- Discrete Mathematics & Graph Theory
+- Universal Human Values
+- Digital Logic & Computer Organization
+- Advanced Data Structures & Algorithm Analysis
+- Object Oriented Programming Through Java
+- Advanced Data Structures Lab
+- OOP Through Java Lab
+- Python Programming
+
+**Year 3 Subjects:**
+- Data Warehousing and Data Mining
+- Computer Networks
+- Formal Languages and Automata Theory
+- Professional Elective
+- Open Elective
+- Data Mining Lab
+- Computer Networks Lab
+- Full Stack Lab
+- NPTEL
 
 #### 2. Manage Students Tab
 **Add Individual Students:**
@@ -182,8 +231,10 @@ src/
 ├── components/
 │   ├── AdminLogin.tsx              # Admin authentication
 │   ├── AdminDashboard.tsx          # Admin main interface with 3 tabs
-│   ├── ManualAttendance.tsx        # Manual attendance entry form
+│   ├── AttendanceManagement.tsx    # Main attendance management interface
+│   ├── DailyAttendance.tsx         # Daily attendance marking with search
 │   ├── AttendanceUpload.tsx        # Excel/CSV attendance upload
+│   ├── ManualAttendance.tsx        # Legacy manual attendance (kept for compatibility)
 │   ├── ManageStudents.tsx          # Year-wise student management
 │   ├── StudentBulkUpload.tsx       # Bulk student upload via CSV/Excel
 │   ├── AttendanceAnalytics.tsx     # Attendance analytics & percentages
@@ -191,7 +242,8 @@ src/
 ├── lib/
 │   └── supabase.ts                # Supabase client config
 ├── utils/
-│   └── calculateAttendance.ts     # Attendance calculations
+│   ├── calculateAttendance.ts     # Attendance calculations
+│   └── yearSubjects.ts            # Year-subject mapping data
 ├── App.tsx                        # Main app with routing
 └── main.tsx                       # Entry point
 ```
@@ -214,6 +266,28 @@ npm run preview
 
 ## Key Features & Notes
 
+### Year-Wise Subject Management
+- **Year 1 Subjects**: 9 courses (theory & lab)
+- **Year 2 Subjects**: 8 courses with advanced topics
+- **Year 3 Subjects**: 9 courses including electives
+- **Year 4 Subjects**: 6 advanced courses
+- Each year has its own dedicated subject list
+- Subject selection is mandatory before marking attendance
+
+### Daily Attendance Features
+- **Real-time Search**: Search students by roll number or name instantly
+- **Bulk Actions**: Mark all present/absent with one click
+- **Year & Subject Filtering**: Only relevant students shown per selection
+- **Searchable List**: No page reload, instant filtering as you type
+- **Status Toggle**: Click button to toggle Present/Absent status
+- **Progress Indicator**: Shows total students being marked
+
+### Attendance Data Storage
+- Attendance records store both year and subject
+- Enables year and subject-wise analytics
+- Tracks which subject was taught when
+- Supports detailed reporting by subject and year
+
 ### Year-Wise Organization
 - Students are organized by academic year (Year 1-4)
 - Each student must have a year assigned during creation
@@ -224,6 +298,7 @@ npm run preview
 - **Overall percentage**: Calculated as the average of all subjects' attendance percentages
 - Color-coded indicators help identify attendance trends quickly
 - CSV export functionality for reports and record-keeping
+- Year-wise filtering for focused insights
 
 ### Bulk Operations
 - Upload multiple students at once with year information
@@ -231,11 +306,11 @@ npm run preview
 - CSV/Excel format validation with preview before upload
 - File format ensures data integrity
 
-### Data Organization
-- Database has built-in year column for scalability
-- Sample data provided for testing (Year 1 students)
-- Existing students are assigned to Year 1 by default
-- All new uploads require year specification
+### Database
+- Attendance records include year column for year-wise tracking
+- Subject-wise storage enables detailed reporting
+- Students table linked with year information
+- Scalable structure supports expansion
 
 ## Support
 

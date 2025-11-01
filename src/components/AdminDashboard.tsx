@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { LogOut, Upload, Plus, Calendar, BarChart3, Users } from 'lucide-react';
-import AttendanceUpload from './AttendanceUpload';
-import ManualAttendance from './ManualAttendance';
+import { LogOut, Calendar, BarChart3, Users } from 'lucide-react';
+import AttendanceManagement from './AttendanceManagement';
 import ManageStudents from './ManageStudents';
 import StudentBulkUpload from './StudentBulkUpload';
 import AttendanceAnalytics from './AttendanceAnalytics';
@@ -13,7 +12,6 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'attendance' | 'students' | 'analytics'>('attendance');
-  const [attendanceSubTab, setAttendanceSubTab] = useState<'manual' | 'upload'>('manual');
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -81,38 +79,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
         {activeTab === 'attendance' && (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Attendance Management</h2>
-
-            <div className="flex space-x-4 mb-6 border-b">
-              <button
-                onClick={() => setAttendanceSubTab('manual')}
-                className={`flex items-center space-x-2 px-4 py-3 font-medium transition border-b-2 ${
-                  attendanceSubTab === 'manual'
-                    ? 'text-blue-600 border-blue-600'
-                    : 'text-gray-500 border-transparent hover:text-gray-700'
-                }`}
-              >
-                <Plus className="w-5 h-5" />
-                <span>Manual Entry</span>
-              </button>
-              <button
-                onClick={() => setAttendanceSubTab('upload')}
-                className={`flex items-center space-x-2 px-4 py-3 font-medium transition border-b-2 ${
-                  attendanceSubTab === 'upload'
-                    ? 'text-blue-600 border-blue-600'
-                    : 'text-gray-500 border-transparent hover:text-gray-700'
-                }`}
-              >
-                <Upload className="w-5 h-5" />
-                <span>Upload Excel/CSV</span>
-              </button>
-            </div>
-
-            {attendanceSubTab === 'manual' ? (
-              <ManualAttendance />
-            ) : (
-              <AttendanceUpload />
-            )}
+            <AttendanceManagement />
           </div>
         )}
 
