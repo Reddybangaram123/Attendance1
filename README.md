@@ -183,9 +183,18 @@ RollNo           Name              Year
 ```
 
 **View Students by Year:**
-1. Click year tabs (Year 1, Year 2, Year 3, Year 4)
-2. View all students in that year
-3. Delete students using the delete icon
+1. Click year tabs (Year 1, Year 2, Year 3, Year 4) - tabs highlight when selected with smooth navigation
+2. View all students in that year with count badge
+3. Delete individual students using the delete icon
+4. **Delete All Students for a Year**: Click "Delete All X Students" button at the bottom
+   - Confirmation required: type the number of students to confirm
+   - Deletion is permanent and removes all students from that year
+
+**Year Tab Features:**
+- Clear visual feedback - selected year highlighted in blue with border
+- Student count badge shows how many students are in the selected year
+- Instant switching between years with live data update
+- Error/success messages displayed for all operations
 
 #### 3. Analytics Tab
 **View Attendance Analytics:**
@@ -288,10 +297,15 @@ npm run preview
 - Tracks which subject was taught when
 - Supports detailed reporting by subject and year
 
-### Year-Wise Organization
+### Year-Wise Organization & Management
 - Students are organized by academic year (Year 1-4)
 - Each student must have a year assigned during creation
 - Analytics can be filtered by year for better insights
+- **New**: Bulk delete all students from a year at once
+- **New**: Enhanced year tab navigation with visual feedback
+- **New**: Live student count badge for each year
+- Year tabs highlight clearly when selected
+- Smooth data updates when switching between years
 
 ### Attendance Analytics
 - **Subject-wise percentages**: Shows attendance % for each subject separately
