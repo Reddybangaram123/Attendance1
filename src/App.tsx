@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { supabase } from './lib/supabase';
 import AdminLogin from './components/AdminLogin';
+import AdminSetup from './components/AdminSetup';
 import AdminDashboard from './components/AdminDashboard';
 import StudentAttendance from './components/StudentAttendance';
 import { UserCircle, Shield } from 'lucide-react';
@@ -97,6 +98,7 @@ function App() {
             )
           }
         />
+        <Route path="/admin/setup" element={<AdminSetup onSetupSuccess={() => window.location.href = '/admin'} />} />
         <Route path="/student" element={<StudentAttendance />} />
       </Routes>
     </Router>

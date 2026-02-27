@@ -1,36 +1,51 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
-import { LogIn, Lock, Mail, Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Mail, Lock, Loader } from 'lucide-react';
 
-interface AdminLoginProps {
-  onLoginSuccess: () => void;
+interface AdminSetupProps {
+  onSetupSuccess: () => void;
 }
 
-export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
+export default function AdminSetup({ onSetupSuccess }: AdminSetupProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-      if (error) throw error;
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/create-admin-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${anonKey}`,
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
-      if (data.user) {
-        onLoginSuccess();
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create admin user');
       }
+
+      setSuccess('Admin user created successfully! Redirecting to login...');
+      setTimeout(() => {
+        onSetupSuccess();
+      }, 2000);
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      setError(err.message || 'Failed to create admin user');
     } finally {
       setLoading(false);
     }
@@ -45,8 +60,8 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
           </div>
         </div>
 
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">Admin Login</h1>
-        <p className="text-center text-gray-600 mb-8">Attendance Management System</p>
+        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">Admin Setup</h1>
+        <p className="text-center text-gray-600 mb-8">Create your admin account</p>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
@@ -54,7 +69,13 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">
+            {success}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Email Address
@@ -94,17 +115,15 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <LogIn className="w-5 h-5" />
-            <span>{loading ? 'Logging in...' : 'Login'}</span>
+            {loading ? (
+              <>
+                <Loader className="w-5 h-5 animate-spin" />
+                <span>Creating...</span>
+              </>
+            ) : (
+              <span>Create Admin Account</span>
+            )}
           </button>
-
-          <Link
-            to="/admin/setup"
-            className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 rounded-lg transition duration-200 flex items-center justify-center space-x-2"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Create Admin Account</span>
-          </Link>
         </form>
       </div>
     </div>
