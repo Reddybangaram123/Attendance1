@@ -13,6 +13,7 @@ export type Student = {
   id: string;
   roll_no: string;
   name: string;
+  year: number;
   created_at: string;
 };
 
@@ -22,6 +23,7 @@ export type AttendanceRecord = {
   date: string;
   subject: string;
   status: 'Present' | 'Absent';
+  year: number;
   created_at: string;
   created_by?: string;
 };
